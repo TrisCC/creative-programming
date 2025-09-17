@@ -1,6 +1,6 @@
 let size;
 let randomVal;
-let round;
+let frameRateVal = 15;
 let step = 0.05;
 let gridSize = 20;
 
@@ -10,12 +10,44 @@ function setup() {
   // rectMode(CENTER);
   randomVal = random(100);
   size = min(width / gridSize, height / gridSize);
-  
-  //Calculates the integer closest to the n parameter. For example, round(133.8) returns the value 134. Maps to Math.round().
-  round = random(size / 2);
+  frameRate(frameRateVal);
+  drawUI();
 }
 
-function draw() {
+function drawUI() {
+  // Add white text labels for inputs
+  fill(255); 
+  stroke(0,0,0);
+  textSize(12);
+  textStyle(BOLD);
+  text('Grid Size:', 10, 30);
+  text('Frame Rate:', 150, 30);
+
+  // Create input elements for grid size and frame rate
+  gridSizeInput = createInput(gridSize.toString(), 'number');
+  gridSizeInput.position(80, 15);
+  gridSizeInput.size(50);
+  gridSizeInput.input(() => {
+    let val = parseInt(gridSizeInput.value());
+    if (!isNaN(val) && val > 0) {
+      gridSize = val;
+      size = min(width / gridSize, height / gridSize);
+    }
+  });
+  
+  frameRateInput = createInput(frameRateVal.toString(), 'number');
+  frameRateInput.position(230, 15);
+  frameRateInput.size(50);
+  frameRateInput.input(() => {
+    let val = parseInt(frameRateInput.value());
+    if (!isNaN(val) && val > 0) {
+      frameRateVal = val;
+      frameRate(frameRateVal);
+    }
+  });
+}
+
+function drawGrid() {
   background(0);
   randomVal += 0.01 ;
   fill(255);
@@ -23,12 +55,17 @@ function draw() {
     for (let y = size; y < windowHeight - size; y += size) {
       stroke(255,0,0);
       if(noise(randomVal, x, y) < 0.5){
-        line(x,y,x+size,y+size);
+        line(x-(0.5*size),y-(0.5*size),x+(0.5*size),y+(0.5*size));
       } else {
-        line(x+size,y,x,y+size);
+        line(x+(0.5*size),y-(0.5*size),x-(0.5*size),y+(0.5*size));
       }
     }
   }
+}
+
+function draw() {
+  drawGrid();
+  drawUI();
 }
 
 function mouseReleased() {
