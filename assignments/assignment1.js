@@ -1,16 +1,14 @@
-let size;
+let lineSize;
 let randomVal;
 let frameRateVal = 15;
-let step = 0.05;
 let gridSize = 20;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
   randomVal = random(100);
-  size = min(width / gridSize, height / gridSize);
+  lineSize = min(width / gridSize, height / gridSize);
   frameRate(frameRateVal);
-  drawUI();
 }
 
 function drawUI() {
@@ -30,7 +28,7 @@ function drawUI() {
     let val = parseInt(gridSizeInput.value());
     if (!isNaN(val) && val > 0) {
       gridSize = val;
-      size = min(width / gridSize, height / gridSize);
+      lineSize = min(width / gridSize, height / gridSize);
     }
   });
   
@@ -50,13 +48,16 @@ function drawGrid() {
   background(0);
   randomVal += 0.01 ;
   fill(255);
-  for (let x = size; x < windowWidth - size; x += size) {
-    for (let y = size; y < windowHeight - size; y += size) {
+  for (let x = lineSize; x < windowWidth - lineSize; x += lineSize) {
+    for (let y = lineSize; y < windowHeight - lineSize; y += lineSize) {
       stroke(255,0,0);
-      if(noise(randomVal, x, y) < 0.5){
-        line(x-(0.5*size),y-(0.5*size),x+(0.5*size),y+(0.5*size));
+      let noiseVal = noise(randomVal, x, y);
+      if(noiseVal < 0.5){
+        stroke(255,noiseVal*255,noiseVal*255)
+        line(x-(0.5*lineSize),y-(0.5*lineSize),x+(0.5*lineSize),y+(0.5*lineSize));
       } else {
-        line(x+(0.5*size),y-(0.5*size),x-(0.5*size),y+(0.5*size));
+        stroke(255,noiseVal*255,noiseVal*255)
+        line(x+(0.5*lineSize),y-(0.5*lineSize),x-(0.5*lineSize),y+(0.5*lineSize));
       }
     }
   }
@@ -69,10 +70,9 @@ function draw() {
 
 function mouseReleased() {
   randomVal = random(1000);
-  step = random(100) / 1000;
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  size = min(width / gridSize, height / gridSize);
+  lineSize = min(width / gridSize, height / gridSize);
 }
