@@ -7,7 +7,6 @@ let gridSize = 20;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-  // rectMode(CENTER);
   randomVal = random(100);
   size = min(width / gridSize, height / gridSize);
   frameRate(frameRateVal);
