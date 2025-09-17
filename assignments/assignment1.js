@@ -12,7 +12,6 @@ function setup() {
 }
 
 function drawUI() {
-  // Add white text labels for inputs
   fill(255); 
   stroke(0,0,0);
   textSize(12);
@@ -20,7 +19,6 @@ function drawUI() {
   text('Grid Size:', 10, 30);
   text('Frame Rate:', 150, 30);
 
-  // Create input elements for grid size and frame rate
   gridSizeInput = createInput(gridSize.toString(), 'number');
   gridSizeInput.position(80, 15);
   gridSizeInput.size(50);
