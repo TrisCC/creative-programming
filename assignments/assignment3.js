@@ -39,7 +39,7 @@ function drawRays(rays = 20, layers = 8) {
   for (j = 0; j < layers; j++) {
     for (i = 0; i < rays; i++) {
       push();
-      translate(frameCount + 100 * j % 800, 0);
+      translate((frameCount + 100 * j) % 800, 0);
       text("light", 0, 0);
       pop();
       rotate((2 * PI / rays));
