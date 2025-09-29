@@ -1,6 +1,5 @@
 let centerX = 0;
 let centerY = 0;
-let layersTotal = 100;
 
 function preload() {
   atmaFont = loadFont("Atma-Regular.ttf");
