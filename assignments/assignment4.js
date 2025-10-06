@@ -10,10 +10,14 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  background(255);
 
   for (let emitter of emitters) {
-    emitter.addParticle();
+    let gravity = createVector(0, 0.1);
+    emitter.applyForce(gravity);
+    if (frameCount % 5 === 0) {
+      emitter.addParticle();
+    }
     emitter.run();
   }
 }
@@ -28,9 +32,14 @@ class Emitter {
     this.particles.push(new Particle(this.origin.x, this.origin.y));
   }
 
+  applyForce(force) {
+    for (let particle of this.particles) {
+      particle.applyForce(force);
+    }
+  }
+
   run() {
-    let length = this.particles.length - 1;
-    for (let i = length; i >= 0; i--) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
       let particle = this.particles[i];
       particle.run();
       if (particle.isDead()) {
@@ -44,16 +53,13 @@ class Particle {
   constructor(x, y) {
     this.position = createVector(x, y);
     this.acceleration = createVector();
-    this.velocity = createVector(random(-1, 1), random(-2, 0));
+    this.velocity = createVector(random(-1, 1), random(-1, 0));
     this.lifespan = 255;
   }
 
   run() {
     this.update();
     this.show();
-
-    let gravity = createVector(0, 0.1);
-    this.applyForce(gravity);
   }
 
   update() {
@@ -65,6 +71,7 @@ class Particle {
 
   show() {
     stroke(0, this.lifespan);
+    strokeWeight(2);
     fill(255, this.lifespan);
     circle(this.position.x, this.position.y, 8);
   }
@@ -80,4 +87,10 @@ class Particle {
 
 function mousePressed() {
   emitters.push(new Emitter(mouseX, mouseY));
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  centerX = width / 2;
+  centerY = height / 2;
 }
