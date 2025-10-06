@@ -2,23 +2,30 @@
 
 let system;
 let emitters = [];
+let planets = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-  emitters.push(new Emitter(width / 2, height / 2));
+  emitters.push(new Emitter(width / 2 - 200, height / 2));
+  emitters.push(new Emitter(width / 2 + 200, height / 2));
+  planets.push(new Planet(width / 2 - 50, height / 2 - 100, 30));
+  planets.push(new Planet(width / 2 + 50, height / 2 + 100, 30));
 }
 
 function draw() {
-  background(255);
+  background(0);
 
   for (let emitter of emitters) {
-    let gravity = createVector(0, 0.1);
-    emitter.applyForce(gravity);
-    if (frameCount % 5 === 0) {
+    if (frameCount % 20 === 0) {
       emitter.addParticle();
     }
     emitter.run();
+    emitter.show();
+  }
+
+  for (let planet of planets) {
+    planet.show();
   }
 }
 
@@ -32,10 +39,10 @@ class Emitter {
     this.particles.push(new Particle(this.origin.x, this.origin.y));
   }
 
-  applyForce(force) {
-    for (let particle of this.particles) {
-      particle.applyForce(force);
-    }
+  show() {
+    fill(255, 255, 0);
+    noStroke();
+    circle(this.origin.x, this.origin.y, 8);
   }
 
   run() {
@@ -53,8 +60,8 @@ class Particle {
   constructor(x, y) {
     this.position = createVector(x, y);
     this.acceleration = createVector();
-    this.velocity = createVector(random(-1, 1), random(-1, 0));
-    this.lifespan = 255;
+    this.velocity = createVector(random(-3, 3), random(-3, 3));
+    this.lifespan = 800;
   }
 
   run() {
@@ -63,6 +70,7 @@ class Particle {
   }
 
   update() {
+    this.applyForce(); // Gravity
     this.velocity.add(this.acceleration);
     this.position.add(this.velocity);
     this.acceleration.mult(0);
@@ -80,8 +88,36 @@ class Particle {
     return this.lifespan < 0;
   }
 
-  applyForce(force) {
+  applyForce() {
+    let force = createVector(0, 0);
+    for (let planet of planets) {
+      let planetForce = planet.attract(this);
+      force.add(planetForce);
+    }
     this.acceleration.add(force);
+  }
+}
+
+class Planet {
+  constructor(x, y, mass) {
+    this.position = createVector(x, y);
+    this.mass = mass;
+    this.radius = mass; // Simplified radius based on mass
+  }
+
+  attract(particle) {
+    let force = p5.Vector.sub(this.position, particle.position);
+    let distance = constrain(force.mag(), 5, 25);
+    force.normalize();
+    let strength = (0.4 * this.mass * 3) / (distance * distance); // Assuming particle mass is 1
+    force.mult(strength);
+    return force;
+  }
+
+  show() {
+    fill(100, 150, 250);
+    noStroke();
+    circle(this.position.x, this.position.y, this.radius * 2);
   }
 }
 
