@@ -1,33 +1,41 @@
 /// <reference path="../libraries/p5.global-mode.d.ts" />
 
-let centerX = 0;
-let centerY = 0;
-
 let system;
-let particles = [];
-
-function preload() {
-
-}
+let emitters = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-
+  emitters.push(new Emitter(width / 2, height / 2));
 }
 
 function draw() {
   background(0);
-  translate(centerX, centerY);
 
-  particles.push(new Particle(width / 2, height / 2));
+  for (let emitter of emitters) {
+    emitter.addParticle();
+    emitter.run();
+  }
+}
 
-  for (let i = particles.length - 1; i >= 0; i--) {
-    let particle = particles[i];
-    particle.run();
+class Emitter {
+  constructor(x, y) {
+    this.origin = createVector(x, y);
+    this.particles = [];
+  }
 
-    if (particle.isDead()) {
-      particles.splice(i, 1);
+  addParticle() {
+    this.particles.push(new Particle(this.origin.x, this.origin.y));
+  }
+
+  run() {
+    let length = this.particles.length - 1;
+    for (let i = length; i >= 0; i--) {
+      let particle = this.particles[i];
+      particle.run();
+      if (particle.isDead()) {
+        this.particles.splice(i, 1);
+      }
     }
   }
 }
@@ -70,10 +78,6 @@ class Particle {
   }
 }
 
-
-// Set the center coordinates when the window is resized
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  centerX = width / 2;
-  centerY = height / 2;
+function mousePressed() {
+  emitters.push(new Emitter(mouseX, mouseY));
 }
