@@ -4,7 +4,7 @@ let centerX = 0;
 let centerY = 0;
 
 let system;
-let particle;
+let particles = [];
 
 function preload() {
 
@@ -14,22 +14,21 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
 
-  particle = new Particle(width / 2, 20);
 }
 
 function draw() {
   background(0);
   translate(centerX, centerY);
 
-  particle.update();
-  particle.show();
+  particles.push(new Particle(width / 2, height / 2));
 
-  let gravity = createVector(0, 0.1);
-  particle.applyForce(gravity);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let particle = particles[i];
+    particle.run();
 
-  if (particle.isDead()) {
-    particle = new Particle(width / 2, 50);
-    console.log("Particle dead!");
+    if (particle.isDead()) {
+      particles.splice(i, 1);
+    }
   }
 }
 
@@ -39,6 +38,14 @@ class Particle {
     this.acceleration = createVector();
     this.velocity = createVector(random(-1, 1), random(-2, 0));
     this.lifespan = 255;
+  }
+
+  run() {
+    this.update();
+    this.show();
+
+    let gravity = createVector(0, 0.1);
+    this.applyForce(gravity);
   }
 
   update() {
