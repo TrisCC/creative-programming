@@ -45,52 +45,25 @@ function setup() {
     try {
       pane = new PaneCtor();
 
-      // Force top-left positioning (use fixed + !important to resist page CSS)
+      // Fix top-left placement
       const el = pane.element ?? pane.view?.element ?? null;
       if (el) {
-        const applyPos = () => {
-          try {
-            el.style.setProperty('position', 'fixed', 'important');
-            el.style.setProperty('left', '8px', 'important');
-            el.style.setProperty('top', '8px', 'important');
-            el.style.setProperty('right', 'auto', 'important');
-            el.style.setProperty('transform', 'none', 'important');
-            el.style.setProperty('margin', '0', 'important');
-            el.style.setProperty('z-index', '10000', 'important');
-            // Move to document.body so parent layout (flex/justify) can't push it
-            if (el.parentElement && el.parentElement !== document.body) {
-              document.body.appendChild(el);
-            }
-          } catch (e) {
-            // ignore
-          }
-        };
-
-        applyPos();
-
-        // Reapply if something modifies the DOM or styles (very small overhead)
-        try {
-          const observer = new MutationObserver(() => applyPos());
-          observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
-          // Also reapply shortly after creation in case the pane is updated asynchronously
-          setTimeout(applyPos, 150);
-        } catch (e) {
-          // ignore if MutationObserver isn't available
-          setTimeout(applyPos, 150);
-        }
+        el.style.position = 'fixed';
+        el.style.left = '8px';
+        el.style.top = '8px';
       }
 
-      const folder = pane.addFolder({ title: 'Drawing' });
-      folder.addInput(params, 'strokeColor', { view: 'color', label: 'Stroke' });
-      folder.addInput(params, 'strokeWidth', { min: 1, max: 40, step: 1, label: 'Width' });
+      const drawingOptions = pane.addFolder({ title: 'Drawing' });
+      drawingOptions.addInput(params, 'strokeColor', { view: 'color', label: 'Stroke' });
+      drawingOptions.addInput(params, 'strokeWidth', { min: 1, max: 40, step: 1, label: 'Width' });
 
-      const ops = pane.addFolder({ title: 'Canvas' });
-      ops.addInput(params, 'bgColor', { view: 'color', label: 'Background' })
+      const canvasOptions = pane.addFolder({ title: 'Canvas' });
+      canvasOptions.addInput(params, 'bgColor', { view: 'color', label: 'Background' })
         .on('change', () => {
           redrawCanvas();
         });
-      ops.addButton({ title: 'Clear' }).on('click', params.clear);
-      ops.addButton({ title: 'Save PNG' }).on('click', params.savePNG);
+      canvasOptions.addButton({ title: 'Clear' }).on('click', params.clear);
+      canvasOptions.addButton({ title: 'Save PNG' }).on('click', params.savePNG);
     } catch (e) {
       console.warn('Error creating Tweakpane UI:', e);
     }
