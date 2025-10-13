@@ -1,5 +1,10 @@
 /// <reference path="../libraries/p5.global-mode.d.ts" />
 
+// Creative Programming - Assignment 5
+// by Tristan Cotino
+
+// Note: The code is a bit messy and I wanted to refactor some stuff and change the regular drawing mode to HSL but it didn't seem worth the effort. Also, I wanted to make the hue slider to react to the keyboard shortcuts but again it didn't seem worth the effort.
+
 // Drawing variables
 let canvas;
 let drawings = [];
@@ -80,9 +85,8 @@ function setup() {
         el.style.top = '8px';
       }
 
+      // Drawing options
       const drawingOptions = pane.addFolder({ title: 'Drawing' });
-      // Create controllers and keep references so we can show/hide them depending on mode
-
       const widthCtrl = drawingOptions.addInput(params, 'strokeWidth', { min: 1, max: 40, step: 1, label: 'Width' });
       const modeCtrl = drawingOptions.addInput(params, 'mode', { options: { Solid: 'solid', Gradient: 'gradient' } });
       const strokeCtrl = drawingOptions.addInput(params, 'strokeColor', { view: 'color', label: 'Color' });
@@ -96,7 +100,6 @@ function setup() {
       // Toggle visibility of color controls
       const updateVisibility = (mode) => {
         const isGradient = mode === 'gradient';
-        // Some Pane versions expose `hidden` as a property on the controller
         if ('hidden' in strokeCtrl) strokeCtrl.hidden = isGradient;
         if ('hidden' in startHCtrl) startHCtrl.hidden = !isGradient;
         if ('hidden' in startSCtrl) startSCtrl.hidden = !isGradient;
@@ -104,7 +107,6 @@ function setup() {
         if ('hidden' in endHCtrl) endHCtrl.hidden = !isGradient;
         if ('hidden' in endSCtrl) endSCtrl.hidden = !isGradient;
         if ('hidden' in endLCtrl) endLCtrl.hidden = !isGradient;
-        // width always visible
       };
 
       // Initial visibility
@@ -115,6 +117,7 @@ function setup() {
         modeCtrl.on('change', (ev) => updateVisibility(ev.value));
       }
 
+      // Canvas options
       const canvasOptions = pane.addFolder({ title: 'Canvas' });
       canvasOptions.addInput(params, 'bgColor', { view: 'color', label: 'Background' })
         .on('change', () => {
@@ -123,10 +126,10 @@ function setup() {
       canvasOptions.addButton({ title: 'Clear' }).on('click', params.clear);
       canvasOptions.addButton({ title: 'Save PNG' }).on('click', params.savePNG);
 
-      // Informational field: keyboard shortcuts
+      // Keyboard shortcuts information
       try {
         const infoHtml = `
-          <div style="font-size:12px;line-height:1.3;margin-top:8px;padding:6px;color:#999;">
+          <div style="font-size:12px;line-height:1.3;padding:10px;color:#999;">
             <strong style="color:#bbb;">Keyboard shortcuts</strong><br>
             Hold <kbd>1</kbd> — rotate gradient start hue<br>
             Hold <kbd>2</kbd> — rotate gradient end hue<br>
@@ -143,21 +146,8 @@ function setup() {
       console.warn('Error creating Tweakpane UI:', e);
     }
   } else {
-    console.warn('Tweakpane not found. Include Tweakpane to use the GUI.');
+    console.warn('Tweakpane not found');
   }
-}
-
-function startPath() {
-  px = mouseX;
-  py = mouseY;
-
-  isDrawing = true;
-  currentPath = [];
-  drawings.push(currentPath);
-}
-
-function endPath() {
-  isDrawing = false;
 }
 
 function draw() {
@@ -197,6 +187,19 @@ function draw() {
   }
 }
 
+// Path drawing handlers
+function startPath() {
+  px = mouseX;
+  py = mouseY;
+
+  isDrawing = true;
+  currentPath = [];
+  drawings.push(currentPath);
+}
+function endPath() {
+  isDrawing = false;
+}
+
 // Draw a stored path
 function drawPath(path) {
   if (!path || path.length === 0) return;
@@ -224,7 +227,7 @@ function drawPath(path) {
   }
 }
 
-// Redraw all stored paths (used when bgColor changes / clear)
+// Redraw all stored paths
 function redrawCanvas() {
   background(params.bgColor);
   for (let i = 0; i < drawings.length; i++) {
