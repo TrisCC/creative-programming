@@ -1,43 +1,57 @@
 /// <reference path="../libraries/p5.global-mode.d.ts" />
 
-let points = [];
+let canvas;
+let drawings = [];
+let currentPath = [];
+let isDrawing = false;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  canvas = createCanvas(windowWidth, windowHeight);
   background(0);
+  canvas.mousePressed(startPath);
+  canvas.mouseReleased(function () {
+    endPath();
+  });
+}
+
+function startPath() {
+  px = mouseX;
+  py = mouseY;
+
+  isDrawing = true;
+  currentPath = [];
+  drawings.push(currentPath);
+}
+
+function endPath() {
+  isDrawing = false;
 }
 
 function draw() {
-  background(0);
-  for (let p of points) {
-    fill(255);
-    noStroke();
-    circle(p.x, p.y, 8);
+  if (isDrawing) {
+    let point = {
+      x1: px,
+      y1: py,
+      x2: mouseX,
+      y2: mouseY
+    }
+    currentPath.push(point);
+    px = mouseX;
+    py = mouseY;
   }
 
-  for (let i = 0; i < points.length - 1; i++) {
-    stroke(255);
-    line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
-  }
-  if (points.length > 2) {
-    line(
-      points[0].x,
-      points[0].y,
-      points[points.length - 1].x,
-      points[points.length - 1].y
-    );
-  }
-}
-
-function mousePressed() {
-  points.push(createVector(mouseX, mouseY));
-  if (points.length > 5) {
-    points.shift();
-  }
-  if (points.length > 1) {
-    for (let i = 0; i < points.length - 1; i++) {
-      stroke(255);
-      line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
+  //Shows the current drawing if there any data in drawing array
+  for (let i = 0; i < drawings.length; i++) {
+    let path = drawings[i];
+    if (drawings[i].length != 0) {
+      // beginShape();
+      for (let j = 0; j < path.length; j++) {
+        strokeWeight(2);
+        stroke(200);
+        line(path[j].x1, path[j].y1, path[j].x2, path[j].y2);
+        // vertex(path[j].x2, path[j].y2);
+      }
+      // endShape();
     }
   }
 }
