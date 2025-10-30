@@ -6,7 +6,7 @@ let crewmate_sprite;
 let crewmatesPositions = [];
 let impostor_sprite;
 let impostorPosition;
-const NUM_SPRITES = 300; // Number of sprites to create
+const NUM_SPRITES = 200; // Number of sprites to create
 const SCALE_SPRITES = 0.3; // Scale for crewmates
 
 
@@ -26,8 +26,11 @@ function setup() {
 
     // Create layers
     sprites = createGraphics(windowWidth, windowHeight);
-    // draw images centered on the sprite layer
     sprites.imageMode(CENTER);
+
+    // Create spotlight layer
+    spotlight = createGraphics(windowWidth, windowHeight);
+    spotlight.imageMode(CENTER);
 
     // Initialize random positions for sprites
     for (let i = 0; i < NUM_SPRITES; i++) {
@@ -43,11 +46,8 @@ function setup() {
         y: random(height),
     };
 
-
     // Randomly assign sprites
     crewmate_sprite = allSprites.splice(random(allSprites.length), 1)[0];
-
-
     impostor_sprite = allSprites.splice(random(allSprites.length), 1)[0];
 }
 
@@ -74,6 +74,14 @@ function draw() {
 
     // Draw the sprites layer onto the main canvas
     image(sprites, 0, 0);
+
+    // Spotlight layer
+    spotlight.clear();
+    spotlight.background(0, 240);
+    spotlight.erase();
+    spotlight.ellipse(mouseX, mouseY, 200, 200);
+    spotlight.noErase();
+    image(spotlight, 0, 0);
 }
 
 function windowResized() {
@@ -81,4 +89,6 @@ function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     sprites = createGraphics(windowWidth, windowHeight);
     sprites.imageMode(CENTER);
+    spotlight = createGraphics(windowWidth, windowHeight);
+    spotlight.imageMode(CENTER);
 }
