@@ -92,6 +92,13 @@ function draw() {
         spotlight.ellipse(mouseX, mouseY, 200, 200);
         spotlight.noErase();
         image(spotlight, 0, 0);
+
+        fill(255, 255, 255);
+        strokeWeight(8);
+        stroke(0, 0, 0);
+        textSize(32);
+        textAlign(CENTER, CENTER);
+        text("Find the impostor", width / 2, height / 10);
     }
 
     if (impostorFound) {
