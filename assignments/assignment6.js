@@ -1,6 +1,8 @@
 // Creative Programming - Assignment 5
 // by Tristan Cotino
 
+// This sketch needs multiple layers because the spotlight effect is easier to achieve that way. You would need to shade every sprite based on mouse position individually otherwise.
+
 // Layers
 let sprites, spotlight;
 
@@ -16,6 +18,10 @@ let impostorFound = false;
 const NUM_SPRITES = 150;
 const SCALE_SPRITES = 0.3;
 
+// Timer variables
+let startTime;
+let finishTime;
+let elapsedTime;
 
 function preload() {
     // Load all amogus sprites
@@ -58,6 +64,9 @@ function setup() {
     // Randomly assign sprites
     crewmate_sprite = allSprites.splice(random(allSprites.length), 1)[0];
     impostor_sprite = allSprites.splice(random(allSprites.length), 1)[0];
+
+    // Start the timer
+    startTime = millis();
 }
 
 function draw() {
@@ -99,6 +108,14 @@ function draw() {
         textSize(32);
         textAlign(CENTER, CENTER);
         text("Find the impostor", width / 2, height / 10);
+
+        // Display running timer
+        elapsedTime = (millis() - startTime) / 1000; // Convert to seconds
+        fill(255, 255, 255);
+        strokeWeight(4);
+        stroke(0, 0, 0);
+        textSize(24);
+        text("Time: " + elapsedTime.toFixed(1) + "s", width / 2, height / 10 + 40);
     }
 
     if (impostorFound) {
@@ -108,6 +125,7 @@ function draw() {
         textSize(32);
         textAlign(CENTER, CENTER);
         text("You found the impostor!", width / 2, height / 2);
+        text("Time: " + finishTime.toFixed(1) + " seconds", width / 2, height / 2 + 50);
 
         fill(0, 0, 0, 0);
         strokeWeight(4);
@@ -132,5 +150,6 @@ function mousePressed() {
     let d = dist(mouseX, mouseY, impostorPosition.x, impostorPosition.y);
     if (d < impostorSize / 2) {
         impostorFound = true;
+        finishTime = (millis() - startTime) / 1000;
     }
 }
