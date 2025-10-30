@@ -6,6 +6,7 @@ let crewmate_sprite;
 let crewmatesPositions = [];
 let impostor_sprite;
 let impostorPosition;
+let impostorFound = false;
 const NUM_SPRITES = 200; // Number of sprites to create
 const SCALE_SPRITES = 0.3; // Scale for crewmates
 
@@ -76,12 +77,29 @@ function draw() {
     image(sprites, 0, 0);
 
     // Spotlight layer
-    spotlight.clear();
-    spotlight.background(0, 240);
-    spotlight.erase();
-    spotlight.ellipse(mouseX, mouseY, 200, 200);
-    spotlight.noErase();
-    image(spotlight, 0, 0);
+    if (!impostorFound) {
+        spotlight.clear();
+        spotlight.background(0, 240);
+        spotlight.erase();
+        spotlight.ellipse(mouseX, mouseY, 200, 200);
+        spotlight.noErase();
+        image(spotlight, 0, 0);
+    }
+
+    if (impostorFound) {
+        fill(255, 255, 255);
+        strokeWeight(8);
+        stroke(0, 0, 0);
+        textSize(32);
+        textAlign(CENTER, CENTER);
+        text("You found the impostor!", width / 2, height / 2);
+
+        fill(0, 0, 0, 0);
+        strokeWeight(4);
+        stroke(255, 0, 0);
+        ellipse(impostorPosition.x, impostorPosition.y, impostorSize + 20, impostorSize + 20);
+
+    }
 }
 
 function windowResized() {
@@ -91,4 +109,13 @@ function windowResized() {
     sprites.imageMode(CENTER);
     spotlight = createGraphics(windowWidth, windowHeight);
     spotlight.imageMode(CENTER);
+}
+
+function mousePressed() {
+    // Check if the mouse is over the impostor
+    let impostorSize = impostor_sprite.width * SCALE_SPRITES;
+    let d = dist(mouseX, mouseY, impostorPosition.x, impostorPosition.y);
+    if (d < impostorSize / 2) {
+        impostorFound = true;
+    }
 }
