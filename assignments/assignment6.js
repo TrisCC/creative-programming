@@ -1,17 +1,24 @@
+// Creative Programming - Assignment 5
+// by Tristan Cotino
+
 // Layers
 let sprites, spotlight;
-let amogus;
+
+// Sprite data
 let allSprites = [];
 let crewmate_sprite;
 let crewmatesPositions = [];
 let impostor_sprite;
 let impostorPosition;
 let impostorFound = false;
-const NUM_SPRITES = 200; // Number of sprites to create
-const SCALE_SPRITES = 0.3; // Scale for crewmates
+
+// Layout constants
+const NUM_SPRITES = 150;
+const SCALE_SPRITES = 0.3;
 
 
 function preload() {
+    // Load all amogus sprites
     amogus_red = loadImage('amogus_red.png');
     amogus_blue = loadImage('amogus_blue.png');
     amogus_green = loadImage('amogus_green.png');
@@ -19,13 +26,14 @@ function preload() {
     amogus_purple = loadImage('amogus_purple.png');
     amogus_yellow = loadImage('amogus_white.png');
 
+    // Put all sprites in an array to choose from later
     allSprites = [amogus_red, amogus_blue, amogus_green, amogus_brown, amogus_purple, amogus_yellow];
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
-    // Create layers
+    // Create sprite layer
     sprites = createGraphics(windowWidth, windowHeight);
     sprites.imageMode(CENTER);
 
