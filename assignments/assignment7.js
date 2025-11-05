@@ -11,6 +11,7 @@ let params = {
     strokeWidth: 4,
     volume: 0.5, // collision sound volume (0.0 - 1.0)
     soundFile: 'that2.wav', // default sound file
+    panningIntensity: 0.6, // how strong stereo panning is for collisions (0.0 - 1.0)
 };
 
 function setup() {
@@ -96,6 +97,15 @@ function setup() {
                 // If sound already loaded, set initial volume
                 if (collisionSound && typeof collisionSound.setVolume === 'function') {
                     try { collisionSound.setVolume(params.volume); } catch (e) { /* ignore */ }
+                }
+                // Panning intensity control
+                try {
+                    const panCtrl = soundFolder.addInput(params, 'panningIntensity', { min: 0, max: 1, step: 0.01, label: 'Panning Intensity' });
+                    panCtrl.on('change', (pev) => {
+                        params.panningIntensity = pev.value;
+                    });
+                } catch (e) {
+                    // ignore if adding panning control fails
                 }
             } catch (e) {
                 // ignore if adding sound folder fails
@@ -228,7 +238,8 @@ class Particle {
             // Play collision sound (with small per-particle cooldown to avoid spam)
             const now = millis();
             if (collisionSound && (now - this._lastCollisionTime) > 100) {
-                collisionSound.pan(-0.6);
+                // Pan left by panningIntensity
+                try { collisionSound.pan(-params.panningIntensity); } catch (e) { /* ignore */ }
                 try {
                     collisionSound.setVolume(params.volume * (this.lifespan / 800));
                     collisionSound.play();
@@ -245,7 +256,8 @@ class Particle {
             // Play collision sound (with small per-particle cooldown to avoid spam)
             const now2 = millis();
             if (collisionSound && (now2 - this._lastCollisionTime) > 100) {
-                collisionSound.pan(0.6);
+                // Pan right by panningIntensity
+                try { collisionSound.pan(params.panningIntensity); } catch (e) { /* ignore */ }
                 try {
                     collisionSound.setVolume(params.volume * (this.lifespan / 800));
                     collisionSound.play();
