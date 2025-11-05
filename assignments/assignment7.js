@@ -9,6 +9,7 @@ let collisionSound;
 let pane;
 let params = {
     strokeWidth: 4,
+    volume: 0.5, // collision sound volume (0.0 - 1.0)
 };
 
 function setup() {
@@ -44,6 +45,25 @@ function setup() {
                 leftPlanet = new Planet((width / 2) - ev.value, height / 2 - 100, 30);
                 rightPlanet = new Planet((width / 2) + ev.value, height / 2 + 100, 30);
             });
+
+            // Sound options
+            try {
+                const soundFolder = pane.addFolder({ title: 'Sound' });
+                const volCtrl = soundFolder.addInput(params, 'volume', { min: 0, max: 1, step: 0.01, label: 'Collision Volume' });
+                volCtrl.on('change', (ev) => {
+                    // Update global param and apply to loaded sound
+                    params.volume = ev.value;
+                    if (collisionSound && typeof collisionSound.setVolume === 'function') {
+                        try { collisionSound.setVolume(params.volume); } catch (e) { /* ignore */ }
+                    }
+                });
+                // If sound already loaded, set initial volume
+                if (collisionSound && typeof collisionSound.setVolume === 'function') {
+                    try { collisionSound.setVolume(params.volume); } catch (e) { /* ignore */ }
+                }
+            } catch (e) {
+                // ignore if adding sound folder fails
+            }
 
             // Keyboard shortcuts information
             try {
@@ -175,8 +195,11 @@ class Particle {
             // Play collision sound (with small per-particle cooldown to avoid spam)
             const now = millis();
             if (collisionSound && (now - this._lastCollisionTime) > 100) {
-                collisionSound.pan(-0.6)
-                try { collisionSound.play(); } catch (e) { /* ignore play errors */ }
+                collisionSound.pan(-0.6);
+                try {
+                    collisionSound.setVolume(params.volume * (this.lifespan / 800));
+                    collisionSound.play();
+                } catch (e) { /* ignore play errors */ }
                 this._lastCollisionTime = now;
             }
         }
@@ -189,8 +212,11 @@ class Particle {
             // Play collision sound (with small per-particle cooldown to avoid spam)
             const now2 = millis();
             if (collisionSound && (now2 - this._lastCollisionTime) > 100) {
-                collisionSound.pan(0.6)
-                try { collisionSound.play(); } catch (e) { /* ignore play errors */ }
+                collisionSound.pan(0.6);
+                try {
+                    collisionSound.setVolume(params.volume * (this.lifespan / 800));
+                    collisionSound.play();
+                } catch (e) { /* ignore play errors */ }
                 this._lastCollisionTime = now2;
             }
         }
