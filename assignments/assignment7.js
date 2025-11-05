@@ -106,9 +106,7 @@ function setup() {
                 const infoHtml = `
           <div style="font-size:12px;line-height:1.3;padding:10px;color:#999;">
             <strong style="color:#bbb;">Keyboard shortcuts</strong><br>
-            Hold <kbd>1</kbd> — rotate gradient start hue<br>
-            Hold <kbd>2</kbd> — rotate gradient end hue<br>
-            Hold <kbd>3</kbd> — rotate both hues<br>
+            Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> — remove last placed emitter<br>
           </div>`;
                 const infoDiv = document.createElement('div');
                 infoDiv.innerHTML = infoHtml;
@@ -346,4 +344,13 @@ class Planet {
 function mousePressed() {
     // Add a new emitter at mouse position
     emitters.push(new Emitter(mouseX, mouseY));
+}
+
+function keyPressed() {
+    // Remove last emitter when Ctrl+Z is pressed
+    if (keyCode === 90 && keyIsDown(CONTROL)) { // 90 is the keyCode for 'Z'
+        if (emitters.length > 0) {
+            emitters.pop();
+        }
+    }
 }
