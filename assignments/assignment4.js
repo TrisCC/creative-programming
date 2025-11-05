@@ -1,4 +1,5 @@
-/// <reference path="../libraries/p5.global-mode.d.ts" />
+// Creative programming assignment 7
+// By Tristan Cotino
 
 let system;
 let emitters = [];

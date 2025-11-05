@@ -1,5 +1,6 @@
 /// <reference path="../libraries/p5.global-mode.d.ts" />
 
+// Simulation variables
 let system;
 let emitters = [];
 let leftPlanet, rightPlanet;
@@ -8,10 +9,14 @@ let collisionSound;
 // Tweakpane variables
 let pane;
 let params = {
-    strokeWidth: 4,
     volume: 0.5, // collision sound volume (0.0 - 1.0)
-    soundFile: 'that2.wav', // default sound file
-    panningIntensity: 0.6, // how strong stereo panning is for collisions (0.0 - 1.0)
+    soundFile: '10.wav', // default sound file
+    panningIntensity: 0.6, // strength of stereo panning for collisions (0.0 - 1.0)
+    pitchVariance: 0.3, // pitch variance for collision sound
+    planetDistance: 100, // distance between planets
+    leftMass: 30, // left planet mass
+    rightMass: 30 // right planet mass
+    , showPlanets: true // show/hide planets
 };
 
 function setup() {
@@ -21,8 +26,8 @@ function setup() {
     // Initialize basic objects
     emitters.push(new Emitter(width / 2 - 300, height / 2));
     emitters.push(new Emitter(width / 2 + 300, height / 2));
-    leftPlanet = new Planet(width / 2 - 50, height / 2 - 100, 30);
-    rightPlanet = new Planet(width / 2 + 50, height / 2 + 100, 30);
+    leftPlanet = new Planet(width / 2 - 50, height / 2 - 100, params.leftMass);
+    rightPlanet = new Planet(width / 2 + 50, height / 2 + 100, params.rightMass);
 
     // Setup Tweakpane
     const PaneCtor = globalThis?.Tweakpane?.Pane ?? globalThis?.Pane ?? null;
@@ -39,18 +44,10 @@ function setup() {
                 el.style.top = '8px';
             }
 
-            // Drawing options
-            const drawingOptions = pane.addFolder({ title: 'Drawing' });
-            const widthCtrl = drawingOptions.addInput(params, 'strokeWidth', { min: 50, max: 500, step: 1, label: 'Planet Distance' });
-            widthCtrl.on('change', (ev) => {
-                params.strokeWidth = ev.value;
-                leftPlanet = new Planet((width / 2) - ev.value, height / 2 - 100, 30);
-                rightPlanet = new Planet((width / 2) + ev.value, height / 2 + 100, 30);
-            });
-
             // Sound options
             try {
                 const soundFolder = pane.addFolder({ title: 'Sound' });
+
                 const volCtrl = soundFolder.addInput(params, 'volume', { min: 0, max: 1, step: 0.01, label: 'Collision Volume' });
                 volCtrl.on('change', (ev) => {
                     // Update global param and apply to loaded sound
@@ -60,9 +57,28 @@ function setup() {
                     }
                 });
 
+                // Panning intensity control
+                try {
+                    const panCtrl = soundFolder.addInput(params, 'panningIntensity', { min: 0, max: 1, step: 0.01, label: 'Panning Intensity' });
+                    panCtrl.on('change', (pev) => {
+                        params.panningIntensity = pev.value;
+                    });
+                } catch (e) {
+                    // ignore if adding panning control fails
+                }
+
+                // Pitch variance control
+                try {
+                    const pitchCtrl = soundFolder.addInput(params, 'pitchVariance', { min: 0, max: 1, step: 0.01, label: 'Pitch Variance' });
+                    pitchCtrl.on('change', (pev) => {
+                        params.pitchVariance = pev.value;
+                    });
+                } catch (e) {
+                    // ignore if adding panning control fails
+                }
+
                 // Add sound file selection dropdown
                 const soundOptions = {
-                    'that2.wav': 'that2.wav',
                     '00.wav': '00.wav',
                     '01.wav': '01.wav',
                     '02.wav': '02.wav',
@@ -73,7 +89,10 @@ function setup() {
                     '07.wav': '07.wav',
                     '08.wav': '08.wav',
                     '09.wav': '09.wav',
-                    '10.wav': '10.wav'
+                    '10.wav': '10.wav',
+                    '11.wav': '11.wav',
+                    '12.wav': '12.wav',
+                    '13.wav': '13.wav'
                 };
                 const soundCtrl = soundFolder.addInput(params, 'soundFile', {
                     options: soundOptions,
@@ -93,29 +112,61 @@ function setup() {
                         console.warn('Could not load sound:', e);
                     }
                 });
-
-                // If sound already loaded, set initial volume
-                if (collisionSound && typeof collisionSound.setVolume === 'function') {
-                    try { collisionSound.setVolume(params.volume); } catch (e) { /* ignore */ }
-                }
-                // Panning intensity control
-                try {
-                    const panCtrl = soundFolder.addInput(params, 'panningIntensity', { min: 0, max: 1, step: 0.01, label: 'Panning Intensity' });
-                    panCtrl.on('change', (pev) => {
-                        params.panningIntensity = pev.value;
-                    });
-                } catch (e) {
-                    // ignore if adding panning control fails
-                }
             } catch (e) {
                 // ignore if adding sound folder fails
+            }
+
+            // Planet options (allow changing gravity/mass which also affects collision radius)
+            try {
+                const planetsFolder = pane.addFolder({ title: 'Planets' });
+
+                // Set distance betweeen planets
+                const widthCtrl = planetsFolder.addInput(params, 'planetDistance', { min: 50, max: 500, step: 1, label: 'Planet Distance' });
+                widthCtrl.on('change', (ev) => {
+                    params.strokeWidth = ev.value;
+                    leftPlanet = new Planet((width / 2) - ev.value, height / 2 - 100, params.leftMass);
+                    rightPlanet = new Planet((width / 2) + ev.value, height / 2 + 100, params.rightMass);
+                });
+
+                // Set left planet mass
+                const leftMassCtrl = planetsFolder.addInput(params, 'leftMass', { min: 5, max: 200, step: 1, label: 'Left Planet Mass' });
+                leftMassCtrl.on('change', (ev) => {
+                    params.leftMass = ev.value;
+                    if (leftPlanet) {
+                        leftPlanet.mass = ev.value;
+                        leftPlanet.radius = ev.value;
+                    }
+                });
+
+                // Set right planet mass
+                const rightMassCtrl = planetsFolder.addInput(params, 'rightMass', { min: 5, max: 200, step: 1, label: 'Right Planet Mass' });
+                rightMassCtrl.on('change', (ev) => {
+                    params.rightMass = ev.value;
+                    if (rightPlanet) {
+                        rightPlanet.mass = ev.value;
+                        rightPlanet.radius = ev.value;
+                    }
+                });
+
+                // Show/hide planets checkbox
+                try {
+                    const showCtrl = planetsFolder.addInput(params, 'showPlanets', { label: 'Show Planets' });
+                    showCtrl.on('change', (ev) => {
+                        params.showPlanets = ev.value;
+                    });
+                } catch (e) {
+                    // ignore if adding control fails
+                }
+            } catch (e) {
+                // ignore if adding planets folder fails
             }
 
             // Keyboard shortcuts information
             try {
                 const infoHtml = `
           <div style="font-size:12px;line-height:1.3;padding:10px;color:#999;">
-            <strong style="color:#bbb;">Keyboard shortcuts</strong><br>
+            <strong style="color:#bbb;">Interactive elements</strong><br>
+            Click anywhere — add new emitter<br>
             Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> — remove last placed emitter<br>
           </div>`;
                 const infoDiv = document.createElement('div');
@@ -134,11 +185,10 @@ function setup() {
 }
 
 function preload() {
-    // Load a collision sound from the samples folder (relative to the assignments/ HTML)
+    // Load a collision sound from the samples folder
     try {
         collisionSound = loadSound('samples/' + params.soundFile);
     } catch (e) {
-        // If loading fails (for instance running locally without server), warn but continue
         console.warn('Could not load collision sound:', e);
         collisionSound = null;
     }
@@ -235,13 +285,15 @@ class Particle {
             let dot = this.velocity.dot(normal);
             let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
             this.velocity = reflection;
-            // Play collision sound (with small per-particle cooldown to avoid spam)
+
+            // Play collision sound (with small cooldown to avoid spam)
             const now = millis();
             if (collisionSound && (now - this._lastCollisionTime) > 100) {
-                // Pan left by panningIntensity
-                try { collisionSound.pan(-params.panningIntensity); } catch (e) { /* ignore */ }
                 try {
+                    // Play collision sounds with parameters
+                    collisionSound.pan(-params.panningIntensity);
                     collisionSound.setVolume(params.volume * (this.lifespan / 800));
+                    collisionSound.rate(1 + (this.lifespan / 800 - 0.5) * params.pitchVariance);
                     collisionSound.play();
                 } catch (e) { /* ignore play errors */ }
                 this._lastCollisionTime = now;
@@ -253,12 +305,14 @@ class Particle {
             let dot = this.velocity.dot(normal);
             let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
             this.velocity = reflection;
-            // Play collision sound (with small per-particle cooldown to avoid spam)
+
+            // Play collision sound (with small cooldown to avoid spam)
             const now2 = millis();
             if (collisionSound && (now2 - this._lastCollisionTime) > 100) {
-                // Pan right by panningIntensity
-                try { collisionSound.pan(params.panningIntensity); } catch (e) { /* ignore */ }
                 try {
+                    // Play collision sounds with parameters
+                    collisionSound.pan(params.panningIntensity);
+                    collisionSound.rate(1 + (this.lifespan / 800 - 0.5) * params.pitchVariance);
                     collisionSound.setVolume(params.volume * (this.lifespan / 800));
                     collisionSound.play();
                 } catch (e) { /* ignore play errors */ }
@@ -324,6 +378,8 @@ class Planet {
     }
 
     show() {
+        // Respect the Tweakpane visibility toggle
+        if (typeof params !== 'undefined' && params.showPlanets === false) return;
         fill(51, 204, 51);
         noStroke();
         circle(this.position.x, this.position.y, this.radius * 2);
