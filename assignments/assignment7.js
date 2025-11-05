@@ -3,6 +3,7 @@
 let system;
 let emitters = [];
 let leftPlanet, rightPlanet;
+let collisionSound;
 
 // Tweakpane variables
 let pane;
@@ -63,12 +64,24 @@ function setup() {
     }
 }
 
+function preload() {
+    // Load a collision sound from the samples folder (relative to the assignments/ HTML)
+    // Adjust filename if you prefer a different sample (00.wav .. 10.wav exist in samples/)
+    try {
+        collisionSound = loadSound('samples/that2.wav');
+    } catch (e) {
+        // If loading fails (for instance running locally without server), warn but continue
+        console.warn('Could not load collision sound:', e);
+        collisionSound = null;
+    }
+}
+
 function draw() {
     background(0);
 
     // Emitter loop
     for (let emitter of emitters) {
-        if (frameCount % 20 === 0) {
+        if (frameCount % 60 === 0) {
             emitter.addParticle();
         }
         emitter.run();
@@ -121,6 +134,8 @@ class Particle {
         this.acceleration = createVector();
         this.velocity = createVector(random(-3, 3), random(-3, 3));
         this.lifespan = 800;
+        // Prevent rapid retriggering of collision sounds for the same particle
+        this._lastCollisionTime = 0;
     }
 
     run() {
@@ -152,6 +167,13 @@ class Particle {
             let dot = this.velocity.dot(normal);
             let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
             this.velocity = reflection;
+            // Play collision sound (with small per-particle cooldown to avoid spam)
+            const now = millis();
+            if (collisionSound && (now - this._lastCollisionTime) > 100) {
+                collisionSound.pan(-0.6)
+                try { collisionSound.play(); } catch (e) { /* ignore play errors */ }
+                this._lastCollisionTime = now;
+            }
         }
         if (this.checkCollision(rightPlanet)) {
             // Calculate reflection vector
@@ -159,6 +181,13 @@ class Particle {
             let dot = this.velocity.dot(normal);
             let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
             this.velocity = reflection;
+            // Play collision sound (with small per-particle cooldown to avoid spam)
+            const now2 = millis();
+            if (collisionSound && (now2 - this._lastCollisionTime) > 100) {
+                collisionSound.pan(0.6)
+                try { collisionSound.play(); } catch (e) { /* ignore play errors */ }
+                this._lastCollisionTime = now2;
+            }
         }
 
         this.position.add(this.velocity);
