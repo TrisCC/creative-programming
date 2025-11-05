@@ -10,6 +10,7 @@ let pane;
 let params = {
     strokeWidth: 4,
     volume: 0.5, // collision sound volume (0.0 - 1.0)
+    soundFile: 'that2.wav', // default sound file
 };
 
 function setup() {
@@ -57,6 +58,41 @@ function setup() {
                         try { collisionSound.setVolume(params.volume); } catch (e) { /* ignore */ }
                     }
                 });
+
+                // Add sound file selection dropdown
+                const soundOptions = {
+                    'that2.wav': 'that2.wav',
+                    '00.wav': '00.wav',
+                    '01.wav': '01.wav',
+                    '02.wav': '02.wav',
+                    '03.wav': '03.wav',
+                    '04.wav': '04.wav',
+                    '05.wav': '05.wav',
+                    '06.wav': '06.wav',
+                    '07.wav': '07.wav',
+                    '08.wav': '08.wav',
+                    '09.wav': '09.wav',
+                    '10.wav': '10.wav'
+                };
+                const soundCtrl = soundFolder.addInput(params, 'soundFile', {
+                    options: soundOptions,
+                    label: 'Sound File'
+                });
+                soundCtrl.on('change', (ev) => {
+                    try {
+                        // Load the new sound file
+                        loadSound('samples/' + ev.value, (newSound) => {
+                            if (collisionSound) {
+                                collisionSound.stop();
+                            }
+                            collisionSound = newSound;
+                            collisionSound.setVolume(params.volume);
+                        });
+                    } catch (e) {
+                        console.warn('Could not load sound:', e);
+                    }
+                });
+
                 // If sound already loaded, set initial volume
                 if (collisionSound && typeof collisionSound.setVolume === 'function') {
                     try { collisionSound.setVolume(params.volume); } catch (e) { /* ignore */ }
@@ -91,9 +127,8 @@ function setup() {
 
 function preload() {
     // Load a collision sound from the samples folder (relative to the assignments/ HTML)
-    // Adjust filename if you prefer a different sample (00.wav .. 10.wav exist in samples/)
     try {
-        collisionSound = loadSound('samples/that2.wav');
+        collisionSound = loadSound('samples/' + params.soundFile);
     } catch (e) {
         // If loading fails (for instance running locally without server), warn but continue
         console.warn('Could not load collision sound:', e);
