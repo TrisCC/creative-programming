@@ -38,7 +38,12 @@ function setup() {
 
             // Drawing options
             const drawingOptions = pane.addFolder({ title: 'Drawing' });
-            const widthCtrl = drawingOptions.addInput(params, 'strokeWidth', { min: 1, max: 40, step: 1, label: 'Width' });
+            const widthCtrl = drawingOptions.addInput(params, 'strokeWidth', { min: 50, max: 500, step: 1, label: 'Planet Distance' });
+            widthCtrl.on('change', (ev) => {
+                params.strokeWidth = ev.value;
+                leftPlanet = new Planet((width / 2) - ev.value, height / 2 - 100, 30);
+                rightPlanet = new Planet((width / 2) + ev.value, height / 2 + 100, 30);
+            });
 
             // Keyboard shortcuts information
             try {
