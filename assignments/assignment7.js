@@ -234,11 +234,10 @@ class Particle {
         let force = createVector(0, 0);
 
         let leftPlanetForce = leftPlanet.attract(this);
-        force.add(leftPlanetForce);
-
         let rightPlanetForce = rightPlanet.attract(this);
-        force.add(rightPlanetForce);
 
+        force.add(leftPlanetForce);
+        force.add(rightPlanetForce);
         this.acceleration.add(force);
     }
 
