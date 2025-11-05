@@ -2,12 +2,12 @@
 
 let system;
 let emitters = [];
-let planets = [];
+let leftPlanet, rightPlanet;
 
 // Tweakpane variables
 let pane;
 let params = {
-    strokeWidth: '#000000',
+    strokeWidth: 4,
 };
 
 function setup() {
@@ -17,8 +17,8 @@ function setup() {
     // Initialize basic objects
     emitters.push(new Emitter(width / 2 - 300, height / 2));
     emitters.push(new Emitter(width / 2 + 300, height / 2));
-    planets.push(new Planet(width / 2 - 50, height / 2 - 100, 30));
-    planets.push(new Planet(width / 2 + 50, height / 2 + 100, 30));
+    leftPlanet = new Planet(width / 2 - 50, height / 2 - 100, 30);
+    rightPlanet = new Planet(width / 2 + 50, height / 2 + 100, 30);
 
     // Setup Tweakpane
     const PaneCtor = globalThis?.Tweakpane?.Pane ?? globalThis?.Pane ?? null;
@@ -75,9 +75,8 @@ function draw() {
     }
 
     // Planet loop
-    for (let planet of planets) {
-        planet.run();
-    }
+    leftPlanet.run();
+    rightPlanet.run();
 }
 
 class Emitter {
@@ -146,16 +145,22 @@ class Particle {
         this.applyForce();
 
         this.velocity.add(this.acceleration);
-        // Check for collisions with planets
-        for (let planet of planets) {
-            if (this.checkCollision(planet)) {
-                // Calculate reflection vector
-                let normal = p5.Vector.sub(this.position, planet.position).normalize();
-                let dot = this.velocity.dot(normal);
-                let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
-                this.velocity = reflection;
-            }
+        // Check for collisions with left planets
+        if (this.checkCollision(leftPlanet)) {
+            // Calculate reflection vector
+            let normal = p5.Vector.sub(this.position, leftPlanet.position).normalize();
+            let dot = this.velocity.dot(normal);
+            let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
+            this.velocity = reflection;
         }
+        if (this.checkCollision(rightPlanet)) {
+            // Calculate reflection vector
+            let normal = p5.Vector.sub(this.position, rightPlanet.position).normalize();
+            let dot = this.velocity.dot(normal);
+            let reflection = p5.Vector.sub(this.velocity, p5.Vector.mult(normal, 2 * dot));
+            this.velocity = reflection;
+        }
+
         this.position.add(this.velocity);
         this.acceleration.mult(0);
         this.lifespan -= 2;
@@ -167,10 +172,13 @@ class Particle {
 
     applyForce() {
         let force = createVector(0, 0);
-        for (let planet of planets) {
-            let planetForce = planet.attract(this);
-            force.add(planetForce);
-        }
+
+        let leftPlanetForce = leftPlanet.attract(this);
+        force.add(leftPlanetForce);
+
+        let rightPlanetForce = rightPlanet.attract(this);
+        force.add(rightPlanetForce);
+
         this.acceleration.add(force);
     }
 
