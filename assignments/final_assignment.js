@@ -6,7 +6,7 @@ let fontSize = 200;
 // Tweakpane variables
 let pane;
 let params = {
-  x: 0,
+  message: msg,
 };
 
 function preload() {
@@ -19,6 +19,12 @@ function setup() {
   if (PaneCtor) {
     // Initialize pane
     pane = new PaneCtor();
+
+    // Add message input
+    pane.addInput(params, "message").on("change", (ev) => {
+      msg = ev.value;
+      regenerateParticles();
+    });
 
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
@@ -33,6 +39,11 @@ function setup() {
   }
 
   createCanvas(windowWidth, windowHeight);
+  regenerateParticles();
+}
+
+function regenerateParticles() {
+  particles = []; // Clear existing particles
 
   // 1. Compute the bounding box to center the text
   let bounds = font.textBounds(msg, 0, 0, fontSize);
