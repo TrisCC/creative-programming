@@ -10,6 +10,7 @@ let params = {
   message: msg,
   disruptors: 15,
   disruptorSpeed: 4,
+  textColor: { r: 100, g: 200, b: 255 },
 };
 
 function preload() {
@@ -31,7 +32,7 @@ function setup() {
 
     // Add disruptor count input
     pane
-      .addInput(params, "disruptors", { min: 0, max: 100, step: 1 })
+      .addInput(params, "disruptors", { min: 0, max: 40, step: 1 })
       .on("change", (ev) => {
         regenerateDisruptors();
       });
@@ -44,6 +45,16 @@ function setup() {
           d.maxSpeed = ev.value;
         }
       });
+
+    // Add text color input
+    pane.addInput(params, "textColor").on("change", (ev) => {
+      const newColor = color(ev.value.r, ev.value.g, ev.value.b);
+      for (let p of particles) {
+        if (p.isCenterParticle) {
+          p.color = newColor;
+        }
+      }
+    });
 
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
@@ -75,13 +86,15 @@ function regenerateParticles() {
   // 1. Compute the bounding box to center the text
   let bounds = font.textBounds(msg, 0, 0, fontSize);
 
-  const padding = 80; // Space between text repetitions
+  const padding = 40; // Space between text repetitions
 
   // Loop to create a grid of text particles
   for (let y = -2; y <= 2; y++) {
     for (let x = -2; x <= 2; x++) {
       const isCenter = x === 0 && y === 0;
-      const particleColor = isCenter ? color(100, 200, 255) : color(128); // Grey for repeated text
+      const particleColor = isCenter
+        ? color(params.textColor.r, params.textColor.g, params.textColor.b)
+        : color(128); // Grey for repeated text
 
       const xOffset = x * (bounds.w + padding);
       const yOffset = y * (bounds.h + padding);
@@ -99,7 +112,7 @@ function regenerateParticles() {
       // 3. Convert points into Particle objects
       for (let i = 0; i < points.length; i++) {
         let p = points[i];
-        let particle = new Particle(p.x, p.y, particleColor);
+        let particle = new Particle(p.x, p.y, particleColor, isCenter);
         particles.push(particle);
       }
     }
@@ -125,12 +138,12 @@ function draw() {
 
 // --- The Particle Class ---
 class Particle {
-  constructor(x, y, col) {
+  constructor(x, y, col, isCenter = false) {
     // Target is where the particle "wants" to be (the text path)
     this.target = createVector(x, y);
 
-    // Position is where the particle currently is (random start)
-    this.pos = createVector(random(width), random(height));
+    // Position is where the particle currently is (its resting spot)
+    this.pos = createVector(x, y);
 
     this.vel = p5.Vector.random2D();
     this.acc = createVector();
@@ -140,6 +153,7 @@ class Particle {
     this.maxForce = 1;
     this.r = 6; // Particle radius
     this.color = col || color(100, 200, 255);
+    this.isCenterParticle = isCenter;
   }
 
   // Appling Reynolds' Steering Behaviors
