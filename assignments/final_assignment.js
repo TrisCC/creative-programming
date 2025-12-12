@@ -12,6 +12,7 @@ let params = {
   disruptorSpeed: 4,
   textColor: { r: 100, g: 200, b: 255 },
   calmCenter: false,
+  movementDampening: 1.0,
 };
 
 function preload() {
@@ -59,6 +60,13 @@ function setup() {
 
     // Add calm center checkbox
     pane.addInput(params, "calmCenter");
+
+    // Add movement dampening slider
+    pane.addInput(params, "movementDampening", {
+      min: 0,
+      max: 2,
+      step: 0.05,
+    });
 
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
@@ -182,9 +190,14 @@ class Particle {
     flee.mult(5); // Flee force is 5x stronger than arrive force
     disrupt.mult(3);
 
-    // If this is a center particle and calm mode is on, reduce the forces that push it away
+    // Apply global movement dampening
+    // arrive.mult(params.movementDampening);
+    flee.mult(params.movementDampening);
+    disrupt.mult(params.movementDampening);
+
+    // If this is a center particle and calm mode is on, reduce the forces
     if (this.isCenterParticle && params.calmCenter) {
-      const calmFactor = 0.3;
+      const calmFactor = 0.1;
       flee.mult(calmFactor);
       disrupt.mult(calmFactor);
     }
