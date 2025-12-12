@@ -26,30 +26,13 @@ function setup() {
     // Initialize pane
     pane = new PaneCtor();
 
-    // Add message input
-    pane.addInput(params, "message").on("change", (ev) => {
+    // --- Text Customization Folder ---
+    const textFolder = pane.addFolder({ title: "Text Customization" });
+    textFolder.addInput(params, "message").on("change", (ev) => {
       msg = ev.value;
       regenerateParticles();
     });
-
-    // Add disruptor count input
-    pane
-      .addInput(params, "disruptors", { min: 0, max: 40, step: 1 })
-      .on("change", (ev) => {
-        regenerateDisruptors();
-      });
-
-    // Add disruptor speed input
-    pane
-      .addInput(params, "disruptorSpeed", { min: 1, max: 100, step: 0.1 })
-      .on("change", (ev) => {
-        for (let d of disruptors) {
-          d.maxSpeed = ev.value;
-        }
-      });
-
-    // Add text color input
-    pane.addInput(params, "textColor").on("change", (ev) => {
+    textFolder.addInput(params, "textColor").on("change", (ev) => {
       const newColor = color(ev.value.r, ev.value.g, ev.value.b);
       for (let p of particles) {
         if (p.isCenterParticle) {
@@ -58,11 +41,22 @@ function setup() {
       }
     });
 
-    // Add calm center checkbox
-    pane.addInput(params, "calmCenter");
-
-    // Add movement dampening slider
-    pane.addInput(params, "movementDampening", {
+    // --- Physics Folder ---
+    const physicsFolder = pane.addFolder({ title: "Physics" });
+    physicsFolder
+      .addInput(params, "disruptors", { min: 0, max: 40, step: 1 })
+      .on("change", (ev) => {
+        regenerateDisruptors();
+      });
+    physicsFolder
+      .addInput(params, "disruptorSpeed", { min: 1, max: 100, step: 0.1 })
+      .on("change", (ev) => {
+        for (let d of disruptors) {
+          d.maxSpeed = ev.value;
+        }
+      });
+    physicsFolder.addInput(params, "calmCenter");
+    physicsFolder.addInput(params, "movementDampening", {
       min: 0,
       max: 2,
       step: 0.05,
