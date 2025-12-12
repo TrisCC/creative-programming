@@ -11,6 +11,7 @@ let params = {
   disruptors: 15,
   disruptorSpeed: 4,
   textColor: { r: 100, g: 200, b: 255 },
+  calmCenter: false,
 };
 
 function preload() {
@@ -55,6 +56,9 @@ function setup() {
         }
       }
     });
+
+    // Add calm center checkbox
+    pane.addInput(params, "calmCenter");
 
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
@@ -177,6 +181,13 @@ class Particle {
     arrive.mult(1);
     flee.mult(5); // Flee force is 5x stronger than arrive force
     disrupt.mult(3);
+
+    // If this is a center particle and calm mode is on, reduce the forces that push it away
+    if (this.isCenterParticle && params.calmCenter) {
+      const calmFactor = 0.3;
+      flee.mult(calmFactor);
+      disrupt.mult(calmFactor);
+    }
 
     this.applyForce(arrive);
     this.applyForce(flee);
