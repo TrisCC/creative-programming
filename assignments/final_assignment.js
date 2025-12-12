@@ -11,7 +11,8 @@ let params = {
   disruptors: 15,
   disruptorSpeed: 4,
   textColor: { r: 100, g: 200, b: 255 },
-  movingColor: { r: 255, g: 132, b: 0 },
+  sideTextColor: { r: 128, g: 128, b: 128 },
+  movingColor: { r: 255, g: 255, b: 0 },
   enableMovingColor: true,
   calmCenter: false,
   movementDampening: 1.0,
@@ -39,7 +40,15 @@ function setup() {
       const newColor = color(ev.value.r, ev.value.g, ev.value.b);
       for (let p of particles) {
         if (p.isCenterParticle) {
-          p.color = newColor;
+          p.originalColor = newColor;
+        }
+      }
+    });
+    textFolder.addInput(params, "sideTextColor").on("change", (ev) => {
+      const newColor = color(ev.value.r, ev.value.g, ev.value.b);
+      for (let p of particles) {
+        if (!p.isCenterParticle) {
+          p.originalColor = newColor;
         }
       }
     });
@@ -117,7 +126,11 @@ function regenerateParticles() {
       const isCenter = x === 0 && y === 0;
       const particleColor = isCenter
         ? color(params.textColor.r, params.textColor.g, params.textColor.b)
-        : color(128); // Grey for repeated text
+        : color(
+            params.sideTextColor.r,
+            params.sideTextColor.g,
+            params.sideTextColor.b
+          );
 
       const xOffset = x * (bounds.w + padding);
       const yOffset = y * (bounds.h + padding);
@@ -180,7 +193,7 @@ class Particle {
     this.maxSpeed = 10;
     this.maxForce = 1;
     this.r = 6; // Particle radius
-    this.color = col || color(100, 200, 255);
+    this.originalColor = col;
     this.isCenterParticle = isCenter;
   }
 
@@ -223,7 +236,7 @@ class Particle {
   }
 
   show() {
-    let currentColor = this.color;
+    let currentColor = this.originalColor;
     const speed = this.vel.mag();
     const isMoving = speed > 0.5; // Threshold to detect movement
 
@@ -237,7 +250,7 @@ class Particle {
       // Map the speed to a 0-1 range for color interpolation
       // The faster it moves, the closer it gets to the target color
       const amount = map(speed, 0.5, this.maxSpeed, 0, 1, true);
-      currentColor = lerpColor(this.color, targetColor, amount);
+      currentColor = lerpColor(this.originalColor, targetColor, amount);
     }
 
     stroke(currentColor);
