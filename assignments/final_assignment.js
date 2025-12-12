@@ -14,6 +14,7 @@ let params = {
   sideTextColor: { r: 128, g: 128, b: 128 },
   movingColor: { r: 255, g: 255, b: 0 },
   enableMovingColor: true,
+  enableGlow: true,
   calmCenter: false,
   movementDampening: 1.0,
   fontSize: 200,
@@ -52,6 +53,7 @@ function setup() {
         }
       }
     });
+    textFolder.addInput(params, "enableGlow");
     textFolder
       .addInput(params, "fontSize", { min: 50, max: 400, step: 1 })
       .on("change", (ev) => {
@@ -253,6 +255,23 @@ class Particle {
       currentColor = lerpColor(this.originalColor, targetColor, amount);
     }
 
+    if (params.enableGlow) {
+      // --- Fuzzy Ring Effect ---
+      // 1. Create a glow color with low alpha
+      let glowColor = color(
+        red(currentColor),
+        green(currentColor),
+        blue(currentColor)
+      );
+      glowColor.setAlpha(50); // Low alpha for a faded look
+
+      // 2. Draw the outer, faded point (the fuzz)
+      stroke(glowColor);
+      strokeWeight(this.r * 1.75); // Make it larger than the core particle
+      point(this.pos.x, this.pos.y);
+    }
+
+    // 3. Draw the main, solid particle on top
     stroke(currentColor);
     strokeWeight(this.r);
     point(this.pos.x, this.pos.y);
