@@ -14,7 +14,7 @@ let params = {
 };
 
 function preload() {
-  font = loadFont("./assets/BebasNeue-regular.ttf");
+  font = loadFont("./assets/BebasNeue-Regular.ttf");
 }
 
 function setup() {
@@ -88,9 +88,15 @@ function regenerateParticles() {
 
   const padding = 40; // Space between text repetitions
 
+  // Dynamically calculate how many repetitions fit on the canvas
+  const textWidthWithPadding = bounds.w + padding;
+  const textHeightWithPadding = bounds.h + padding;
+  const numX = Math.ceil(width / 2 / textWidthWithPadding);
+  const numY = Math.ceil(height / 2 / textHeightWithPadding);
+
   // Loop to create a grid of text particles
-  for (let y = -2; y <= 2; y++) {
-    for (let x = -2; x <= 2; x++) {
+  for (let y = -numY; y <= numY; y++) {
+    for (let x = -numX; x <= numX; x++) {
       const isCenter = x === 0 && y === 0;
       const particleColor = isCenter
         ? color(params.textColor.r, params.textColor.g, params.textColor.b)
@@ -105,7 +111,7 @@ function regenerateParticles() {
       // 2. Use Opentype pathfinding (via P5 wrapper) to get points
       // sampleFactor: lower number = fewer points, higher = more points
       let points = font.textToPoints(msg, xStart, yStart, fontSize, {
-        sampleFactor: 0.1,
+        sampleFactor: 0.07,
         simplifyThreshold: 0,
       });
 
@@ -134,6 +140,11 @@ function draw() {
   for (let i = 0; i < disruptors.length; i++) {
     disruptors[i].update();
   }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  regenerateParticles();
 }
 
 // --- The Particle Class ---
