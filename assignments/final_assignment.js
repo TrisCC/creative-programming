@@ -1,5 +1,6 @@
 let font;
 let particles = [];
+let disruptors = [];
 let msg = "KINETIC";
 let fontSize = 200;
 
@@ -7,6 +8,8 @@ let fontSize = 200;
 let pane;
 let params = {
   message: msg,
+  disruptors: 15,
+  disruptorSpeed: 4,
 };
 
 function preload() {
@@ -26,6 +29,22 @@ function setup() {
       regenerateParticles();
     });
 
+    // Add disruptor count input
+    pane
+      .addInput(params, "disruptors", { min: 0, max: 100, step: 1 })
+      .on("change", (ev) => {
+        regenerateDisruptors();
+      });
+
+    // Add disruptor speed input
+    pane
+      .addInput(params, "disruptorSpeed", { min: 1, max: 100, step: 0.1 })
+      .on("change", (ev) => {
+        for (let d of disruptors) {
+          d.maxSpeed = ev.value;
+        }
+      });
+
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
     if (el) {
@@ -40,6 +59,14 @@ function setup() {
 
   createCanvas(windowWidth, windowHeight);
   regenerateParticles();
+  regenerateDisruptors();
+}
+
+function regenerateDisruptors() {
+  disruptors = [];
+  for (let i = 0; i < params.disruptors; i++) {
+    disruptors.push(new Disruptor());
+  }
 }
 
 function regenerateParticles() {
@@ -85,9 +112,14 @@ function draw() {
   // Update and draw every particle
   for (let i = 0; i < particles.length; i++) {
     let p = particles[i];
-    p.behaviors();
+    p.behaviors(disruptors);
     p.update();
     p.show();
+  }
+
+  // Update disruptors
+  for (let i = 0; i < disruptors.length; i++) {
+    disruptors[i].update();
   }
 }
 
@@ -111,16 +143,19 @@ class Particle {
   }
 
   // Appling Reynolds' Steering Behaviors
-  behaviors() {
+  behaviors(disruptors) {
     let arrive = this.arrive(this.target);
     let flee = this.flee(createVector(mouseX, mouseY));
+    let disrupt = this.fleeFromGroup(disruptors, 75); // Flee from disruptors within 75px
 
     // Multipliers: How strong is each force?
     arrive.mult(1);
     flee.mult(5); // Flee force is 5x stronger than arrive force
+    disrupt.mult(3);
 
     this.applyForce(arrive);
     this.applyForce(flee);
+    this.applyForce(disrupt);
   }
 
   applyForce(f) {
@@ -172,6 +207,62 @@ class Particle {
       return steer;
     } else {
       return createVector(0, 0);
+    }
+  }
+
+  // Behavior 3: Flee from a group of agents
+  fleeFromGroup(group, perceptionRadius) {
+    let steer = createVector(0, 0);
+    let total = 0;
+    for (let i = 0; i < group.length; i++) {
+      let other = group[i];
+      let d = dist(this.pos.x, this.pos.y, other.pos.x, other.pos.y);
+      if (d > 0 && d < perceptionRadius) {
+        // Calculate vector pointing away from neighbor
+        let diff = p5.Vector.sub(this.pos, other.pos);
+        diff.normalize();
+        diff.div(d); // Weight by distance
+        steer.add(diff);
+        total++;
+      }
+    }
+    if (total > 0) {
+      steer.div(total);
+      steer.setMag(this.maxSpeed);
+      let steerForce = p5.Vector.sub(steer, this.vel);
+      steerForce.limit(this.maxForce);
+      return steerForce;
+    } else {
+      return createVector(0, 0);
+    }
+  }
+}
+
+// --- The Disruptor Class (Invisible) ---
+class Disruptor {
+  constructor() {
+    this.pos = createVector(random(width), random(height));
+    this.vel = p5.Vector.random2D();
+    this.vel.mult(random(params.disruptorSpeed / 2, params.disruptorSpeed));
+    this.acc = createVector();
+    this.maxSpeed = params.disruptorSpeed;
+  }
+
+  update() {
+    this.pos.add(this.vel);
+    this.vel.add(this.acc);
+    this.vel.limit(this.maxSpeed);
+    this.acc.mult(0);
+    this.edges();
+  }
+
+  // Bounce off edges
+  edges() {
+    if (this.pos.x > width || this.pos.x < 0) {
+      this.vel.x *= -1;
+    }
+    if (this.pos.y > height || this.pos.y < 0) {
+      this.vel.y *= -1;
     }
   }
 }
