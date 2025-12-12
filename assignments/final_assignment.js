@@ -11,6 +11,8 @@ let params = {
   disruptors: 15,
   disruptorSpeed: 4,
   textColor: { r: 100, g: 200, b: 255 },
+  movingColor: { r: 255, g: 132, b: 0 },
+  enableMovingColor: true,
   calmCenter: false,
   movementDampening: 1.0,
   fontSize: 200,
@@ -47,6 +49,8 @@ function setup() {
         fontSize = ev.value;
         regenerateParticles();
       });
+    textFolder.addInput(params, "enableMovingColor");
+    textFolder.addInput(params, "movingColor");
 
     // --- Physics Folder ---
     const physicsFolder = pane.addFolder({ title: "Physics" });
@@ -219,7 +223,24 @@ class Particle {
   }
 
   show() {
-    stroke(this.color);
+    let currentColor = this.color;
+    const speed = this.vel.mag();
+    const isMoving = speed > 0.5; // Threshold to detect movement
+
+    if (params.enableMovingColor && !this.isCenterParticle && isMoving) {
+      const targetColor = color(
+        params.movingColor.r,
+        params.movingColor.g,
+        params.movingColor.b
+      );
+
+      // Map the speed to a 0-1 range for color interpolation
+      // The faster it moves, the closer it gets to the target color
+      const amount = map(speed, 0.5, this.maxSpeed, 0, 1, true);
+      currentColor = lerpColor(this.color, targetColor, amount);
+    }
+
+    stroke(currentColor);
     strokeWeight(this.r);
     point(this.pos.x, this.pos.y);
   }
