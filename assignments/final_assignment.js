@@ -47,21 +47,35 @@ function regenerateParticles() {
 
   // 1. Compute the bounding box to center the text
   let bounds = font.textBounds(msg, 0, 0, fontSize);
-  let xStart = width / 2 - bounds.w / 2;
-  let yStart = height / 2 + bounds.h / 2;
 
-  // 2. Use Opentype pathfinding (via P5 wrapper) to get points
-  // sampleFactor: lower number = fewer points, higher = more points
-  let points = font.textToPoints(msg, xStart, yStart, fontSize, {
-    sampleFactor: 0.3,
-    simplifyThreshold: 0,
-  });
+  const padding = 80; // Space between text repetitions
 
-  // 3. Convert points into Particle objects
-  for (let i = 0; i < points.length; i++) {
-    let p = points[i];
-    let particle = new Particle(p.x, p.y);
-    particles.push(particle);
+  // Loop to create a grid of text particles
+  for (let y = -2; y <= 2; y++) {
+    for (let x = -2; x <= 2; x++) {
+      const isCenter = x === 0 && y === 0;
+      const particleColor = isCenter ? color(100, 200, 255) : color(128); // Grey for repeated text
+
+      const xOffset = x * (bounds.w + padding);
+      const yOffset = y * (bounds.h + padding);
+
+      let xStart = width / 2 - bounds.w / 2 + xOffset;
+      let yStart = height / 2 + bounds.h / 2 + yOffset;
+
+      // 2. Use Opentype pathfinding (via P5 wrapper) to get points
+      // sampleFactor: lower number = fewer points, higher = more points
+      let points = font.textToPoints(msg, xStart, yStart, fontSize, {
+        sampleFactor: 0.1,
+        simplifyThreshold: 0,
+      });
+
+      // 3. Convert points into Particle objects
+      for (let i = 0; i < points.length; i++) {
+        let p = points[i];
+        let particle = new Particle(p.x, p.y, particleColor);
+        particles.push(particle);
+      }
+    }
   }
 }
 
@@ -79,7 +93,7 @@ function draw() {
 
 // --- The Particle Class ---
 class Particle {
-  constructor(x, y) {
+  constructor(x, y, col) {
     // Target is where the particle "wants" to be (the text path)
     this.target = createVector(x, y);
 
@@ -93,7 +107,7 @@ class Particle {
     this.maxSpeed = 10;
     this.maxForce = 1;
     this.r = 6; // Particle radius
-    this.color = color(100, 200, 255);
+    this.color = col || color(100, 200, 255);
   }
 
   // Appling Reynolds' Steering Behaviors
