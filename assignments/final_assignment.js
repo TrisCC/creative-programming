@@ -13,6 +13,7 @@ let params = {
   textColor: { r: 100, g: 200, b: 255 },
   calmCenter: false,
   movementDampening: 1.0,
+  fontSize: 200,
 };
 
 function preload() {
@@ -40,6 +41,12 @@ function setup() {
         }
       }
     });
+    textFolder
+      .addInput(params, "fontSize", { min: 50, max: 400, step: 1 })
+      .on("change", (ev) => {
+        fontSize = ev.value;
+        regenerateParticles();
+      });
 
     // --- Physics Folder ---
     const physicsFolder = pane.addFolder({ title: "Physics" });
