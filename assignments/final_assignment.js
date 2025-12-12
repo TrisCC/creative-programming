@@ -10,14 +10,14 @@ let params = {
   message: msg,
   disruptors: 15,
   disruptorSpeed: 4,
-  textColor: { r: 100, g: 200, b: 255 },
-  sideTextColor: { r: 128, g: 128, b: 128 },
-  movingColor: { r: 255, g: 255, b: 0 },
+  textColor: { r: 255, g: 160, b: 58 },
+  sideTextColor: { r: 235, g: 100, b: 100 },
+  movingColor: { r: 0, g: 255, b: 230 },
   enableMovingColor: true,
   enableGlow: true,
-  calmCenter: false,
-  movementDampening: 1.0,
-  fontSize: 200,
+  calmCenter: true,
+  movementDampening: 0.8,
+  fontSize: 300,
 };
 
 function preload() {
