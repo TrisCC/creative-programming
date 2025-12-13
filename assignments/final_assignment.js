@@ -8,10 +8,11 @@ let params = {
   disruptors: 15,
   disruptorSpeed: 4,
   textColor: { r: 255, g: 160, b: 58 },
-  sideTextColor: { r: 235, g: 100, b: 100 },
+  sideTextColor: { r: 77, g: 77, b: 77 },
   movingColor: { r: 0, g: 255, b: 230 },
   enableMovingColor: true,
   enableGlow: true,
+  repeatText: true,
   calmCenter: true,
   movementDampening: 0.8,
   fontSize: 300,
@@ -37,6 +38,7 @@ function setup() {
       msg = ev.value;
       regenerateParticles();
     });
+    textFolder.addInput(params, "repeatText").on("change", regenerateParticles);
     textFolder.addInput(params, "textColor").on("change", (ev) => {
       const newColor = color(ev.value.r, ev.value.g, ev.value.b);
       for (let p of particles) {
@@ -138,8 +140,12 @@ function regenerateParticles() {
   // Dynamically calculate how many repetitions fit on the canvas
   const textWidthWithPadding = bounds.w + padding;
   const textHeightWithPadding = bounds.h + padding;
-  const numX = Math.ceil(width / 2 / textWidthWithPadding);
-  const numY = Math.ceil(height / 2 / textHeightWithPadding);
+  const numX = params.repeatText
+    ? Math.ceil(width / 2 / textWidthWithPadding)
+    : 0;
+  const numY = params.repeatText
+    ? Math.ceil(height / 2 / textHeightWithPadding)
+    : 0;
 
   // Loop to create a grid of text particles
   for (let y = -numY; y <= numY; y++) {
