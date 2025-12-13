@@ -92,6 +92,11 @@ function setup() {
       step: 0.05,
     });
 
+    // --- Screenshot Button ---
+    pane.addButton({ title: "Save Screenshot" }).on("click", () => {
+      saveCanvas(`kinetic-type-${msg}-${Date.now()}`, "png");
+    });
+
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
     if (el) {
