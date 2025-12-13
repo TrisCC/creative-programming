@@ -115,6 +115,9 @@ function setup() {
     utilsFolder.addButton({ title: "Save Screenshot" }).on("click", () => {
       saveCanvas(`kinetic-type-${msg}-${Date.now()}`, "png");
     });
+    utilsFolder.addMonitor({ tip: "Press 'h' to hide/show" }, "tip", {
+      label: "", // An empty label makes it look like a simple line of text
+    });
 
     // Fix top-left placement
     const el = pane.element ?? pane.view?.element ?? null;
@@ -236,6 +239,15 @@ function draw() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   regenerateParticles();
+}
+
+function keyPressed() {
+  // Press 'h' to hide/show the Tweakpane panel
+  if (key.toLowerCase() === "h") {
+    if (pane) {
+      pane.hidden = !pane.hidden;
+    }
+  }
 }
 
 function handleFile(file) {
