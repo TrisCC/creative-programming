@@ -100,8 +100,19 @@ function setup() {
       step: 0.05,
     });
 
-    // --- Screenshot Button ---
-    pane.addButton({ title: "Save Screenshot" }).on("click", () => {
+    // --- Utilities Folder ---
+    const utilsFolder = pane.addFolder({ title: "Utilities" });
+    utilsFolder.addButton({ title: "Export Preset" }).on("click", () => {
+      const preset = pane.exportPreset();
+      saveJSON(preset, `kinetic-preset-${Date.now()}.json`);
+    });
+    const fileInput = createFileInput(handleFile);
+    fileInput.parent(document.body); // Attach to body but keep hidden
+    fileInput.hide();
+    utilsFolder.addButton({ title: "Import Preset" }).on("click", () => {
+      fileInput.elt.click();
+    });
+    utilsFolder.addButton({ title: "Save Screenshot" }).on("click", () => {
       saveCanvas(`kinetic-type-${msg}-${Date.now()}`, "png");
     });
 
@@ -225,6 +236,34 @@ function draw() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   regenerateParticles();
+}
+
+function handleFile(file) {
+  // Check the file extension instead of the MIME type for reliability
+  if (file.name && file.name.toLowerCase().endsWith(".json")) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const preset = JSON.parse(e.target.result);
+        pane.importPreset(preset);
+
+        // Manually update state and regenerate everything because importPreset
+        // doesn't fire the change events on the bindings.
+        msg = params.message;
+        fontSize = params.fontSize;
+
+        regenerateDisruptors();
+        regenerateParticles();
+      } catch (err) {
+        console.error("Error parsing preset file:", err);
+        alert("Could not import preset. The file may be invalid.");
+      }
+    };
+    // Use the native file object from the p5.File wrapper
+    reader.readAsText(file.file);
+  } else {
+    alert("Please select a valid preset JSON file.");
+  }
 }
 
 // --- The Particle Class ---
