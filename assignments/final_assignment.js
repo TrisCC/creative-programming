@@ -1,13 +1,10 @@
 let font;
 let particles = [];
-let disruptors = [];
-let msg = "KINETIC";
-let fontSize = 200;
 
 // Tweakpane variables
 let pane;
 let params = {
-  message: msg,
+  message: "KINETIC",
   disruptors: 15,
   disruptorSpeed: 4,
   textColor: { r: 255, g: 160, b: 58 },
@@ -20,6 +17,7 @@ let params = {
   fontSize: 300,
   skewX: 0,
   skewY: 0,
+  sampleFactor: 0.08,
 };
 
 function preload() {
@@ -67,6 +65,14 @@ function setup() {
       .on("change", regenerateParticles);
     textFolder
       .addInput(params, "skewY", { min: -1, max: 1, step: 0.01 })
+      .on("change", regenerateParticles);
+    textFolder
+      .addInput(params, "sampleFactor", {
+        label: "Particle Density",
+        min: 0.05,
+        max: 0.125,
+        step: 0.001,
+      })
       .on("change", regenerateParticles);
     textFolder.addInput(params, "enableMovingColor");
     textFolder.addInput(params, "movingColor");
@@ -125,7 +131,7 @@ function regenerateParticles() {
   particles = []; // Clear existing particles
 
   // 1. Compute the bounding box to center the text
-  let bounds = font.textBounds(msg, 0, 0, fontSize);
+  let bounds = font.textBounds(params.message, 0, 0, params.fontSize);
 
   const padding = 40; // Space between text repetitions
 
@@ -155,10 +161,16 @@ function regenerateParticles() {
 
       // 2. Use Opentype pathfinding (via P5 wrapper) to get points
       // sampleFactor: lower number = fewer points, higher = more points
-      let points = font.textToPoints(msg, xStart, yStart, fontSize, {
-        sampleFactor: 0.07,
-        simplifyThreshold: 0,
-      });
+      let points = font.textToPoints(
+        params.message,
+        xStart,
+        yStart,
+        params.fontSize,
+        {
+          sampleFactor: params.sampleFactor,
+          simplifyThreshold: 0,
+        }
+      );
 
       // 3. Convert points into Particle objects
       for (let i = 0; i < points.length; i++) {
