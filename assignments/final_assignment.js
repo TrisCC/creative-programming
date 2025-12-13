@@ -1,9 +1,11 @@
 let font;
 let particles = [];
+let disruptors = [];
 
 // Tweakpane variables
 let pane;
 let params = {
+  font: "BebasNeue.ttf",
   message: "KINETIC",
   disruptors: 15,
   disruptorSpeed: 4,
@@ -23,7 +25,7 @@ let params = {
 };
 
 function preload() {
-  font = loadFont("./assets/BebasNeue-Regular.ttf");
+  font = loadFont(`./assets/${params.font}`);
 }
 
 function setup() {
@@ -40,6 +42,22 @@ function setup() {
       .on("change", (ev) => {
         msg = ev.value;
         regenerateParticles();
+      });
+    textFolder
+      .addInput(params, "font", {
+        label: "Font",
+        options: {
+          Akira: "Akira.otf",
+          "Bebas Neue": "BebasNeue.ttf",
+          Coolvetica: "Coolvetica.otf",
+          Ethnocentric: "Ethnocentric.otf",
+          "Lemon Milk": "LemonMilk.otf",
+          Nexa: "Nexa.ttf",
+          Vogue: "Vogue.ttf",
+        },
+      })
+      .on("change", (ev) => {
+        font = loadFont(`./assets/${ev.value}`, regenerateParticles);
       });
     textFolder
       .addInput(params, "repeatText", { label: "Text Repetition" })
@@ -307,9 +325,10 @@ function handleFile(file) {
         // doesn't fire the change events on the bindings.
         msg = params.message;
         fontSize = params.fontSize;
-
-        regenerateDisruptors();
-        regenerateParticles();
+        font = loadFont(`./assets/${params.font}`, () => {
+          regenerateDisruptors();
+          regenerateParticles();
+        });
       } catch (err) {
         console.error("Error parsing preset file:", err);
         alert("Could not import preset. The file may be invalid.");
