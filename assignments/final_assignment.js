@@ -18,6 +18,8 @@ let params = {
   calmCenter: true,
   movementDampening: 0.8,
   fontSize: 300,
+  skewX: 0,
+  skewY: 0,
 };
 
 function preload() {
@@ -60,6 +62,12 @@ function setup() {
         fontSize = ev.value;
         regenerateParticles();
       });
+    textFolder
+      .addInput(params, "skewX", { min: -1, max: 1, step: 0.01 })
+      .on("change", regenerateParticles);
+    textFolder
+      .addInput(params, "skewY", { min: -1, max: 1, step: 0.01 })
+      .on("change", regenerateParticles);
     textFolder.addInput(params, "enableMovingColor");
     textFolder.addInput(params, "movingColor");
 
@@ -150,7 +158,24 @@ function regenerateParticles() {
       // 3. Convert points into Particle objects
       for (let i = 0; i < points.length; i++) {
         let p = points[i];
-        let particle = new Particle(p.x, p.y, particleColor, isCenter);
+
+        // --- Apply Skew ---
+        const textCenterX = xStart + bounds.w / 2;
+        const textCenterY = yStart - bounds.h / 2;
+
+        // Translate point to be relative to the text's center
+        const relX = p.x - textCenterX;
+        const relY = p.y - textCenterY;
+
+        // Apply skew transformation
+        const skewedX = relX + relY * params.skewX;
+        const skewedY = relY + relX * params.skewY;
+
+        // Translate back to original position
+        const finalX = skewedX + textCenterX;
+        const finalY = skewedY + textCenterY;
+
+        let particle = new Particle(finalX, finalY, particleColor, isCenter);
         particles.push(particle);
       }
     }
