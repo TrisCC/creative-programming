@@ -18,7 +18,8 @@ let params = {
   fontSize: 300,
   skewX: 0,
   skewY: 0,
-  sampleFactor: 0.08,
+  sampleFactor: 0.07,
+  backgroundColor: { r: 20, g: 20, b: 20 },
 };
 
 function preload() {
@@ -34,39 +35,65 @@ function setup() {
 
     // --- Text Customization Folder ---
     const textFolder = pane.addFolder({ title: "Text Customization" });
-    textFolder.addInput(params, "message").on("change", (ev) => {
-      msg = ev.value;
-      regenerateParticles();
-    });
-    textFolder.addInput(params, "repeatText").on("change", regenerateParticles);
-    textFolder.addInput(params, "textColor").on("change", (ev) => {
-      const newColor = color(ev.value.r, ev.value.g, ev.value.b);
-      for (let p of particles) {
-        if (p.isCenterParticle) {
-          p.originalColor = newColor;
-        }
-      }
-    });
-    textFolder.addInput(params, "sideTextColor").on("change", (ev) => {
-      const newColor = color(ev.value.r, ev.value.g, ev.value.b);
-      for (let p of particles) {
-        if (!p.isCenterParticle) {
-          p.originalColor = newColor;
-        }
-      }
-    });
-    textFolder.addInput(params, "enableGlow");
     textFolder
-      .addInput(params, "fontSize", { min: 50, max: 400, step: 1 })
+      .addInput(params, "message", { label: "Text" })
+      .on("change", (ev) => {
+        msg = ev.value;
+        regenerateParticles();
+      });
+    textFolder
+      .addInput(params, "repeatText", { label: "Text Repetition" })
+      .on("change", regenerateParticles);
+    textFolder
+      .addInput(params, "textColor", { label: "Center Text Color" })
+      .on("change", (ev) => {
+        const newColor = color(ev.value.r, ev.value.g, ev.value.b);
+        for (let p of particles) {
+          if (p.isCenterParticle) {
+            p.originalColor = newColor;
+          }
+        }
+      });
+    textFolder
+      .addInput(params, "sideTextColor", { label: "Repetition Text Color" })
+      .on("change", (ev) => {
+        const newColor = color(ev.value.r, ev.value.g, ev.value.b);
+        for (let p of particles) {
+          if (!p.isCenterParticle) {
+            p.originalColor = newColor;
+          }
+        }
+      });
+    textFolder.addInput(params, "backgroundColor", {
+      label: "Background Color",
+    });
+    textFolder.addInput(params, "enableGlow", { label: "Text Glow" });
+    textFolder
+      .addInput(params, "fontSize", {
+        min: 50,
+        max: 400,
+        step: 1,
+        label: "Font Size",
+      })
       .on("change", (ev) => {
         fontSize = ev.value;
         regenerateParticles();
       });
     textFolder
-      .addInput(params, "skewX", { min: -1, max: 1, step: 0.01 })
+      .addInput(params, "skewX", {
+        min: -1,
+        max: 1,
+        step: 0.01,
+        label: "Skew X",
+      })
       .on("change", regenerateParticles);
     textFolder
-      .addInput(params, "skewY", { min: -1, max: 1, step: 0.01 })
+      .addInput(params, "skewY", {
+        min: -1,
+        max: 1,
+        step: 0.01,
+        label: "Skew Y",
+      })
       .on("change", regenerateParticles);
     textFolder
       .addInput(params, "sampleFactor", {
@@ -76,28 +103,41 @@ function setup() {
         step: 0.001,
       })
       .on("change", regenerateParticles);
-    textFolder.addInput(params, "enableMovingColor");
-    textFolder.addInput(params, "movingColor");
+    textFolder.addInput(params, "enableMovingColor", {
+      label: "Movement coloring",
+    });
+    textFolder.addInput(params, "movingColor", { label: "Movement color" });
 
     // --- Physics Folder ---
     const physicsFolder = pane.addFolder({ title: "Physics" });
     physicsFolder
-      .addInput(params, "disruptors", { min: 0, max: 40, step: 1 })
+      .addInput(params, "disruptors", {
+        min: 0,
+        max: 40,
+        step: 1,
+        label: "Number of Disruptors",
+      })
       .on("change", (ev) => {
         regenerateDisruptors();
       });
     physicsFolder
-      .addInput(params, "disruptorSpeed", { min: 1, max: 100, step: 0.1 })
+      .addInput(params, "disruptorSpeed", {
+        min: 1,
+        max: 100,
+        step: 0.1,
+        label: "Disruptor Speed",
+      })
       .on("change", (ev) => {
         for (let d of disruptors) {
           d.maxSpeed = ev.value;
         }
       });
-    physicsFolder.addInput(params, "calmCenter");
+    physicsFolder.addInput(params, "calmCenter", { label: "Calm Center Text" });
     physicsFolder.addInput(params, "movementDampening", {
       min: 0,
       max: 2,
       step: 0.05,
+      label: "Movement Dampening",
     });
 
     // --- Utilities Folder ---
@@ -220,7 +260,11 @@ function regenerateParticles() {
 }
 
 function draw() {
-  background(20); // Dark background for contrast
+  background(
+    params.backgroundColor.r,
+    params.backgroundColor.g,
+    params.backgroundColor.b
+  );
 
   // Update and draw every particle
   for (let i = 0; i < particles.length; i++) {
