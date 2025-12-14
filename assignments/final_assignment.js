@@ -1,3 +1,6 @@
+// Final Assignment for Creative Programming: Kinetic Type with Particle Physics
+// by Tristan Cotino
+
 let font;
 let particles = [];
 let disruptors = [];
@@ -174,7 +177,7 @@ function setup() {
       saveCanvas(`kinetic-type-${params.message}-${Date.now()}`, "png");
     });
     utilsFolder.addMonitor({ tip: "Press 'h' to hide/show" }, "tip", {
-      label: "", // An empty label makes it look like a simple line of text
+      label: "",
     });
 
     // Fix top-left placement
@@ -417,9 +420,9 @@ class Particle {
       currentColor = lerpColor(this.originalColor, targetColor, amount);
     }
 
+    // Draw glow effect if enabled
     if (params.enableGlow) {
-      // --- Fuzzy Ring Effect ---
-      // 1. Create a glow color with low alpha
+      // Create a glow color with low alpha
       let glowColor = color(
         red(currentColor),
         green(currentColor),
@@ -427,13 +430,13 @@ class Particle {
       );
       glowColor.setAlpha(50); // Low alpha for a faded look
 
-      // 2. Draw the outer, faded point (the fuzz)
+      // Draw the outer, faded point (the fuzz)
       stroke(glowColor);
       strokeWeight(this.r * 1.75); // Make it larger than the core particle
       point(this.pos.x, this.pos.y);
     }
 
-    // 3. Draw the main, solid particle on top
+    // Draw the main, solid particle on top
     stroke(currentColor);
     strokeWeight(this.r);
     point(this.pos.x, this.pos.y);
