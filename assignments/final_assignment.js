@@ -40,7 +40,7 @@ function setup() {
     textFolder
       .addInput(params, "message", { label: "Text" })
       .on("change", (ev) => {
-        msg = ev.value;
+        message = ev.value;
         regenerateParticles();
       });
     textFolder
@@ -171,7 +171,7 @@ function setup() {
       fileInput.elt.click();
     });
     utilsFolder.addButton({ title: "Save Screenshot" }).on("click", () => {
-      saveCanvas(`kinetic-type-${msg}-${Date.now()}`, "png");
+      saveCanvas(`kinetic-type-${params.message}-${Date.now()}`, "png");
     });
     utilsFolder.addMonitor({ tip: "Press 'h' to hide/show" }, "tip", {
       label: "", // An empty label makes it look like a simple line of text
@@ -204,7 +204,7 @@ function regenerateDisruptors() {
 function regenerateParticles() {
   particles = []; // Clear existing particles
 
-  // 1. Compute the bounding box to center the text
+  // Compute the bounding box to center the text
   let bounds = font.textBounds(params.message, 0, 0, params.fontSize);
 
   const padding = 40; // Space between text repetitions
@@ -226,10 +226,10 @@ function regenerateParticles() {
       const particleColor = isCenter
         ? color(params.textColor.r, params.textColor.g, params.textColor.b)
         : color(
-            params.sideTextColor.r,
-            params.sideTextColor.g,
-            params.sideTextColor.b
-          );
+          params.sideTextColor.r,
+          params.sideTextColor.g,
+          params.sideTextColor.b
+        );
 
       const xOffset = x * (bounds.w + padding);
       const yOffset = y * (bounds.h + padding);
@@ -237,7 +237,7 @@ function regenerateParticles() {
       let xStart = width / 2 - bounds.w / 2 + xOffset;
       let yStart = height / 2 + bounds.h / 2 + yOffset;
 
-      // 2. Use Opentype pathfinding (via P5 wrapper) to get points
+      // Use Opentype pathfinding (via P5 wrapper) to get points
       // sampleFactor: lower number = fewer points, higher = more points
       let points = font.textToPoints(
         params.message,
@@ -250,7 +250,7 @@ function regenerateParticles() {
         }
       );
 
-      // 3. Convert points into Particle objects
+      // Convert points into Particle objects
       for (let i = 0; i < points.length; i++) {
         let p = points[i];
 
@@ -323,7 +323,7 @@ function handleFile(file) {
 
         // Manually update state and regenerate everything because importPreset
         // doesn't fire the change events on the bindings.
-        msg = params.message;
+        message = params.message;
         fontSize = params.fontSize;
         font = loadFont(`./assets/${params.font}`, () => {
           regenerateDisruptors();
